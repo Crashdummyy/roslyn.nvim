@@ -155,6 +155,23 @@ opts = {
     -- This will always attach to the target in `vim.g.roslyn_nvim_selected_solution`.
     -- NOTE: You can use `:Roslyn target` to change the target
     lock_target = false,
+
+    -- Share a single language server between multiple clients (like multiple neovim
+    -- instances, or other editors on the same machine) instead of starting a
+    -- dedicated server per instance.
+    -- The first instance launches the server and wamrs it up.
+    -- The lsp then relays over named pipes.
+    -- Solutions are still opened per client, but runtime and metadata caches are
+    -- shared, reducing memory usage and startup time for subsequent clients.
+    daemon = {
+        enabled = false,
+
+        -- Seconds the daemon stays alive after the last client disconnects.
+        -- nil: Uses roslyn-language-server default (900s).
+        -- -1: keeps it alive forever. 
+        --  0: daemon exits immediately
+        keep_alive = nil,
+    },
 }
 ```
 
