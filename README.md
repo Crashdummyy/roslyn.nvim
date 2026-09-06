@@ -14,7 +14,7 @@ server.
 ## ⚡️ Requirements
 
 - Neovim >= 0.12.0
-- Roslyn language server downloaded locally
+- Roslyn language server >= `5.12.0-1.26453.19` downloaded locally
 - .NET SDK installed and `dotnet` command available
 
 ## Difference to nvim-lspconfig
@@ -155,24 +155,29 @@ opts = {
     -- This will always attach to the target in `vim.g.roslyn_nvim_selected_solution`.
     -- NOTE: You can use `:Roslyn target` to change the target
     lock_target = false,
-
-    -- Share a single language server between multiple clients (like multiple neovim
-    -- instances, or other editors on the same machine) instead of starting a
-    -- dedicated server per instance.
-    -- The first instance launches the server and wamrs it up.
-    -- The lsp then relays over named pipes.
-    -- Solutions are still opened per client, but runtime and metadata caches are
-    -- shared, reducing memory usage and startup time for subsequent clients.
-    daemon = {
-        enabled = false,
-
-        -- Seconds the daemon stays alive after the last client disconnects.
-        -- nil: Uses roslyn-language-server default (900s).
-        -- -1: keeps it alive forever. 
-        --  0: daemon exits immediately
-        keep_alive = nil,
-    },
 }
+```
+
+### Daemon mode
+
+The server is started in daemon mode.  
+A single language server is shared between multiple clients (like multiple neovim instances, 
+or other editors on the same machine) instead of starting a dedicated server per instance.  
+Clients use **named pipes** to relay but solutions are still opened per client.  
+The runtime overhead and metadata caches are shared, reducing memory usage and startup time.  
+
+The daemon **stays alive for 900 seconds** - default as of 5.12.0-1.26453.19 - **after the last client disconnects**.  
+This can be changed with the environment variable
+`ROSLYN_LANGUAGE_SERVER_DAEMON_KEEPALIVE` (`-1` keeps it alive forever, `0`
+exits immediately), or by appending `--daemonKeepAlive <seconds>` to the cmd.  
+(`vim.env.ROSLYN_LANGUAGE_SERVER_DAEMON_KEEPALIVE = "0"`)
+
+To opt out of daemon mode, override the cmd without `--daemon-mode`:
+
+```lua
+vim.lsp.config("roslyn", {
+    cmd = { require("roslyn.utils").get_roslyn_lsp_path(), "--stdio" },
+})
 ```
 
 To configure language server specific settings sent to the server, you can use the `vim.lsp.config` interface with `roslyn` as the name of the server.

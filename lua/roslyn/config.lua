@@ -8,10 +8,6 @@ local M = {}
 ---@field path string?
 ---@field args? string[]
 
----@class RoslynNvimDaemonConfig
----@field enabled boolean
----@field keep_alive? integer
-
 ---@class InternalRoslynNvimConfig
 ---@field filewatching "auto" | "off" | "roslyn"
 ---@field choose_target? fun(targets: string[]): string?
@@ -19,7 +15,6 @@ local M = {}
 ---@field broad_search boolean
 ---@field lock_target boolean
 ---@field debug boolean
----@field daemon RoslynNvimDaemonConfig
 
 ---@class RoslynNvimConfig
 ---@field filewatching? boolean | "auto" | "off" | "roslyn"
@@ -28,7 +23,6 @@ local M = {}
 ---@field broad_search? boolean
 ---@field lock_target? boolean
 ---@field debug? boolean
----@field daemon? RoslynNvimDaemonConfig
 
 ---@type InternalRoslynNvimConfig
 local roslyn_config = {
@@ -38,30 +32,7 @@ local roslyn_config = {
     broad_search = false,
     lock_target = false,
     debug = false,
-    daemon = {
-        enabled = false,
-    },
 }
-
-local function configure_daemon(daemon)
-    local thin_client = require("roslyn.utils").get_roslyn_thin_client_path()
-    if not thin_client then
-        vim.notify(
-            "roslyn.nvim: `daemon.enabled` is set, but the `roslyn-language-server` thin client was not found. "
-            .. "If on mason please update to >= 5.12.0-1.26453.19",
-            vim.log.levels.WARN,
-            { title = "roslyn.nvim" }
-        )
-        return
-    end
-
-    local cmd = { thin_client, "--stdio", "--daemon-mode", "--clientProcessId", tostring(vim.uv.os_getpid()) }
-    if daemon.keep_alive then
-        vim.list_extend(cmd, { "--daemonKeepAlive", tostring(daemon.keep_alive) })
-    end
-
-    vim.lsp.config("roslyn", { cmd = cmd })
-end
 
 function M.get()
     return roslyn_config
@@ -86,10 +57,6 @@ function M.setup(user_config)
                 },
             },
         })
-    end
-
-    if roslyn_config.daemon.enabled then
-        configure_daemon(roslyn_config.daemon)
     end
 
     return roslyn_config

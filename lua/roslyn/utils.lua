@@ -27,36 +27,6 @@ function M.get_roslyn_lsp_path()
     return "Microsoft.CodeAnalysis.LanguageServer"
 end
 
---- Temporary code. TODO - Remove in a few weeks after everyone installed at least 5.12.0-1.26453.19 because at that point we changed the mason link
---- Resolves the `roslyn-language-server` thin client that ships next to the server binary.
----@return string?
-function M.get_roslyn_thin_client_path()
-    local sysname = vim.uv.os_uname().sysname:lower()
-    local iswin = not not (sysname:find("windows") or sysname:find("mingw"))
-    local thin_client_bin = iswin and "roslyn-language-server.exe" or "roslyn-language-server"
-    local server_bin = iswin and "Microsoft.CodeAnalysis.LanguageServer.exe" or "Microsoft.CodeAnalysis.LanguageServer"
-
-    local server_path = vim.fn.exepath(M.get_roslyn_lsp_path())
-    if server_path == "" then
-        return nil
-    end
-    server_path = vim.uv.fs_realpath(server_path) or server_path
-
-    local basename = vim.fs.basename(server_path)
-    if basename == thin_client_bin then
-        return server_path
-    end
-
-    if basename == server_bin then
-        local sibling = vim.fs.joinpath(vim.fs.dirname(server_path), thin_client_bin)
-        if vim.fn.executable(sibling) == 1 then
-            return sibling
-        end
-    end
-
-    return nil
-end
-
 function M.populate_virtual_buffer_content(lsp_client, uri, bufnr)
     assert(lsp_client, "Must have a `roslyn` client to load roslyn source generated file")
 
