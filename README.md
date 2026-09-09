@@ -176,7 +176,7 @@ To opt out of daemon mode, override the cmd without `--daemon-mode`:
 
 ```lua
 vim.lsp.config("roslyn", {
-    cmd = { require("roslyn.utils").get_roslyn_lsp_path(), "--stdio" },
+    cmd = { "/path/to/roslyn-language-server-or-microsoft-codeanalysis-languageserver", "--stdio" },
 })
 ```
 
